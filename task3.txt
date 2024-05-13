@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #E8E9EB; /* Background color */
+        }
+        .container {
+            text-align: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin-bottom: 20px;
+            background-color: #928E85; /* Grid color */
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            background-color: #E8E9EB; /* Square color */
+            color: #ffffff;
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .cell:hover {
+            background-color: #928E85; /* Lighter brown on hover */
+        }
+        .message {
+            font-size: 1.5rem;
+        }
+        button {
+            cursor: pointer;
+            background-color: #928E85; /* Button color */
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            margin: 0;
+            outline: none;
+            display: block;
+            margin: 10px auto;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #E8E9EB; /* Lighter brown on hover */
+        }
+        /* Color customization */
+        .cell.X {
+            color: red; /* Red for X */
+        }
+        .cell.O {
+            color: black; /* Black for O */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div class="message" id="message"></div>
+        <button id="resetButton">Reset</button>
+        <button id="aiButton">Play with AI</button>
+        <button id="playerButton">Play with a Friend</button>
+    </div>
+
+    <script>
+        const board = document.getElementById('board');
+        const cells = document.querySelectorAll('.cell');
+        const message = document.getElementById('message');
+        const resetButton = document.getElementById('resetButton');
+        const aiButton = document.getElementById('aiButton');
+        const playerButton = document.getElementById('playerButton');
+
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        let currentPlayer = 'X';
+        let isGameActive = false;
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let isAIEnabled = false;
+        let gameOver = false;
+
+        function checkWinner() {
+            for (const condition of winningConditions) {
+                const [a, b, c] = condition;
+                if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
+                    message.innerText = `${currentPlayer} wins!`;
+                    gameOver = true;
+                    break;
+                }
+            }
+            if (!gameBoard.includes('') && !gameOver) {
+                message.innerText = "It's a draw!";
+                gameOver = true;
+            }
+        }
+
+        function handleCellClick(event) {
+            if (gameOver) return;
+            const index = event.target.getAttribute('data-index');
+            if (gameBoard[index] === '' && isGameActive) {
+                gameBoard[index] = currentPlayer;
+                event.target.classList.add(currentPlayer);
+                event.target.innerText = currentPlayer;
+                checkWinner();
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                if (isAIEnabled && currentPlayer === 'O') {
+                    aiMove();
+                }
+            }
+        }
+
+        function handleReset() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            isGameActive = true;
+            currentPlayer = 'X';
+            gameOver = false;
+            message.innerText = '';
+            cells.forEach(cell => {
+                cell.innerText = '';
+                cell.classList.remove('X', 'O');
+            });
+        }
+
+        function handleAIPlay() {
+            isAIEnabled = true;
+            isGameActive = true;
+            aiButton.disabled = true;
+            playerButton.disabled = true;
+            message.innerText = 'You are playing against AI';
+            currentPlayer = 'X';
+        }
+
+        function handlePlayerPlay() {
+            isAIEnabled = false;
+            isGameActive = true;
+            aiButton.disabled = true;
+            playerButton.disabled = true;
+            message.innerText = 'You are playing against another player';
+            currentPlayer = 'X';
+        }
+
+        function aiMove() {
+            const availableMoves = gameBoard.reduce((acc, val, index) => {
+                if (val === '') acc.push(index);
+                return acc;
+            }, []);
+
+            const randomIndex = Math.floor(Math.random() * availableMoves.length);
+            const move = availableMoves[randomIndex];
+            gameBoard[move] = currentPlayer;
+            cells[move].classList.add(currentPlayer);
+            cells[move].innerText = currentPlayer;
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            checkWinner();
+        }
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        resetButton.addEventListener('click', handleReset);
+        aiButton.addEventListener('click', handleAIPlay);
+        playerButton.addEventListener('click', handlePlayerPlay);
+    </script>
+</body>
+</html>
